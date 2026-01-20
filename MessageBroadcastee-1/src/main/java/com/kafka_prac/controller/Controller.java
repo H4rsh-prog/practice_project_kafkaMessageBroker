@@ -3,25 +3,42 @@ package com.kafka_prac.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kafka_prac.model.BroadcastedMessage;
+import com.kafka_prac.service.JWTService;
 import com.kafka_prac.service.KafkaListeners;
 
-import java.util.ArrayList;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
 public class Controller {
 	@Autowired
 	private KafkaListeners listener;
+	@Autowired
+	private JWTService jwtService;
 	
 	@GetMapping("/")
 	public List<BroadcastedMessage> getHistory(){
 		return this.listener.getHistory();
 	}
-	
+	@PutMapping("/{topic}")
+	public ResponseEntity<String> subscribeTopic(@PathVariable("topic") String topic, HttpServletRequest request){
+		String authHeader = request.getHeader("Authorization");
+		if(authHeader!= null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			if(this.jwtService.validate(token)) {
+				this.listener.addSubscription(topic);
+			}
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid Json Web Token");
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Authorization Header");
+	}
 }

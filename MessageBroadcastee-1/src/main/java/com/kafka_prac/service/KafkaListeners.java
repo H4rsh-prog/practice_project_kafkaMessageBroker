@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.kafka_prac.model.BroadcastedMessage;
 
 import lombok.Getter;
-import lombok.Setter;
 
 
 @Service
@@ -36,5 +35,9 @@ public class KafkaListeners {
 										);
 		System.out.println(msg);
 		history.add(msg);
+	}
+
+	public void addSubscription(String topic) {
+		this.subscribedTopics.add(topic);
 	}
 }
