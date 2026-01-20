@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
@@ -16,13 +17,18 @@ import lombok.Getter;
 
 @Service
 public class KafkaListeners {
+	@Autowired
+	private SubscriberService subService;
 	@Getter
-	private List<String> subscribedTopics = new ArrayList<>(List.of("firstTopic","secretTopic"));
+	private List<String> subscribedTopics = new ArrayList<>();
 	@Getter
 	private List<BroadcastedMessage> history = new ArrayList<>();
 	
 	@KafkaListener(topicPattern = ".*", groupId = "${spring.kafka.consumer.group-id}")
 	public void listen(Message<String> message) {
+		this.subscribedTopics = this.subService.getSub()
+												.get()
+												.getSubscribedTopics();
 		Map<String, Object> headerList = message.getHeaders();
 		if(!this.getSubscribedTopics().contains(headerList.get("kafka_receivedTopic"))) {
 			return;
@@ -33,11 +39,6 @@ public class KafkaListeners {
 											""+headerList.getOrDefault("kafka_receivedMessageKey", "DEFAULT_NOT_FOUND"),
 											new Date(System.currentTimeMillis())
 										);
-		System.out.println(msg);
-		history.add(msg);
-	}
-
-	public void addSubscription(String topic) {
-		this.subscribedTopics.add(topic);
+		this.history.add(msg);
 	}
 }
