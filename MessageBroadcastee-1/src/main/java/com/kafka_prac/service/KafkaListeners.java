@@ -19,10 +19,10 @@ import lombok.Getter;
 public class KafkaListeners {
 	@Autowired
 	private SubscriberService subService;
+	@Autowired
+	private MessageHistoryService historyService;
 	@Getter
 	private List<String> subscribedTopics = new ArrayList<>();
-	@Getter
-	private List<BroadcastedMessage> history = new ArrayList<>();
 	
 	@KafkaListener(topicPattern = ".*", groupId = "${spring.kafka.consumer.group-id}")
 	public void listen(Message<String> message) {
@@ -39,6 +39,6 @@ public class KafkaListeners {
 											""+headerList.getOrDefault("kafka_receivedMessageKey", "DEFAULT_NOT_FOUND"),
 											new Date(System.currentTimeMillis())
 										);
-		this.history.add(msg);
+		this.historyService.addMessage((String) headerList.get("kafka_receivedTopic"), msg);
 	}
 }

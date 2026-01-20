@@ -3,12 +3,15 @@ package com.kafka_prac.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kafka_prac.model.BroadcastedMessage;
+import com.kafka_prac.model.TopicHistory;
 import com.kafka_prac.service.JWTService;
 import com.kafka_prac.service.KafkaListeners;
+import com.kafka_prac.service.MessageHistoryService;
 import com.kafka_prac.service.SubscriberService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +30,20 @@ public class Controller {
 	private JWTService jwtService;
 	@Autowired
 	private SubscriberService subService;
+	@Autowired
+	private MessageHistoryService historyService;
 	
 	@GetMapping("/")
-	public List<BroadcastedMessage> getHistory(){
-		return this.listener.getHistory();
+	public List<TopicHistory> getHistory(){
+		List<TopicHistory> listHistory = this.historyService.fetchAll();
+		List<String> listTopics = this.subService.getSub().get().getSubscribedTopics();
+		List<TopicHistory> permittedHistory = new ArrayList<>();
+		for(TopicHistory topic : listHistory) {
+			if(listTopics.contains(topic.getTopic())) {
+				permittedHistory.add(topic);
+			}
+		}
+		return permittedHistory;
 	}
 	@PutMapping("/")
 	public ResponseEntity<String> generateToken(){

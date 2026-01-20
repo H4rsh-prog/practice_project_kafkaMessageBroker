@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,6 @@ public class Subscriber {
 	@Id
 	@Column(unique = true)
 	private String groupID;
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	private List<String> subscribedTopics;
 }

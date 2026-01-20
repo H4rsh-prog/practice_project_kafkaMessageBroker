@@ -3,9 +3,9 @@ package com.kafka_prac.template;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.kafka_prac.model.Subscriber;
+import com.kafka_prac.model.TopicHistory;
 
 @Repository
-public interface SubscriberRepo extends CrudRepository<Subscriber, String> {
+public interface MessageHistoryRepo extends CrudRepository<TopicHistory, String> {
 
 }
