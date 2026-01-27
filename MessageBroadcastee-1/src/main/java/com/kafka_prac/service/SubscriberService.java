@@ -19,6 +19,8 @@ public class SubscriberService {
 	private SubscriberRepo repo;
 	@Value("${spring.kafka.consumer.group-id}")
 	private String groupID;
+	@Autowired
+	MessageHistoryService historyService;
 	
 	public ResponseEntity<?> addTopic(String topic) {
 		Optional<Subscriber> opt_sub = this.repo.findById(groupID);

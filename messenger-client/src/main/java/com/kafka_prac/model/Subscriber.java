@@ -1,24 +1,22 @@
 package com.kafka_prac.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class Subscriber {
 	@Id
-	@Column(unique = true)
-	private String groupID;
-	@ElementCollection(fetch = FetchType.LAZY)
-	private List<String> subscribedTopics;
+	private String groupId;
+	@OneToMany(targetEntity = Topic.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private List<Topic> subscriptionList;
 }

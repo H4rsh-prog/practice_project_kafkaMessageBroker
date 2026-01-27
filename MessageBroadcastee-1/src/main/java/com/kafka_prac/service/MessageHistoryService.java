@@ -18,7 +18,7 @@ public class MessageHistoryService {
 	public Optional<TopicHistory> addMessage(String topic, BroadcastedMessage message) {
 		Optional<TopicHistory> topicHistory = this.repo.findById(topic);
 		if(topicHistory.isEmpty()) {
-			return Optional.of(this.repo.save(new TopicHistory(topic, new ArrayList<BroadcastedMessage>())));
+			return Optional.of(this.repo.save(new TopicHistory(topic, new ArrayList<BroadcastedMessage>(List.of(message)))));
 		}
 		List<BroadcastedMessage> messageHistory = topicHistory.get().getTopicHistory();
 		messageHistory.add(message);
