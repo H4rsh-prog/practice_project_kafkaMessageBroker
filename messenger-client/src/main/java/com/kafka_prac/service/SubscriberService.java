@@ -35,7 +35,7 @@ public class SubscriberService {
 		Optional<Subscriber> opt_sub = getSubscriber(group_id);
 		Optional<Topic> opt_topic = this.topicService.getTopic(topic);
 		if(opt_sub.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(group_id+" IS NOT AN EXISTING SUBSCRIBER");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("CLIENT ["+group_id+"] NOT INITIALIZED, PLEASE INITIALIZE BY PUT@/client/id/init/"+group_id);
 		}
 		if(opt_topic.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(topic+" DOES NOT EXISTS");
@@ -45,6 +45,22 @@ public class SubscriberService {
 		}
 		List<Topic> subscriptionList = opt_sub.get().getSubscriptionList();
 		subscriptionList.add(opt_topic.get());
+		return ResponseEntity.ok(this.repo.save(new Subscriber(group_id, subscriptionList)));
+	}
+	public ResponseEntity<?> removeTopic(String group_id, String topic){
+		Optional<Subscriber> opt_sub = getSubscriber(group_id);
+		Optional<Topic> opt_topic = this.topicService.getTopic(topic);
+		if(opt_sub.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(group_id+" IS NOT AN EXISTING SUBSCRIBER");
+		}
+		if(opt_topic.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(topic+" DOES NOT EXISTS");
+		}
+		if(!fetchSubscribedTopics(group_id).contains(topic)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(group_id+" IS NOT SUBSCRIBED TO "+topic);
+		}
+		List<Topic> subscriptionList = opt_sub.get().getSubscriptionList();
+		subscriptionList.remove(opt_topic.get());
 		return ResponseEntity.ok(this.repo.save(new Subscriber(group_id, subscriptionList)));
 	}
 }

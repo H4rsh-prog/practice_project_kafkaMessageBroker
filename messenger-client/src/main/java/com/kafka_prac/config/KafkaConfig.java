@@ -6,6 +6,7 @@ import java.util.Map;
 import com.kafka_prac.MessengerClientApplication;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -19,10 +20,12 @@ import org.springframework.kafka.core.ProducerFactory;
 @Configuration
 @EnableKafka
 public class KafkaConfig {
+	@Value("${spring.kafka.bootstrap-servers}") private String bootstrap_servers;
+	@Value("${spring.kafka.consumer.group-id}") private String consumer_group_id;
 	
 	@Bean ProducerFactory<String, String> getProdFactory(){
 		Map<String, Object> config = new HashMap<>();
-		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, MessengerClientApplication.bootstrap_servers);
+		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.bootstrap_servers);
 		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
 		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
 		return new DefaultKafkaProducerFactory<>(config);
@@ -32,8 +35,8 @@ public class KafkaConfig {
 	}
 	@Bean ConsumerFactory<String, String> getConsumerFactory(){
 		Map<String, Object> config = new HashMap<>();
-		config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, MessengerClientApplication.bootstrap_servers);
-		config.put(ConsumerConfig.GROUP_ID_CONFIG, MessengerClientApplication.consumer_group_id);
+		config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.bootstrap_servers);
+		config.put(ConsumerConfig.GROUP_ID_CONFIG, this.consumer_group_id);
 		config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
 		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);

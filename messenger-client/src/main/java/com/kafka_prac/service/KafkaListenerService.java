@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
@@ -19,29 +21,29 @@ public class KafkaListenerService {
 	@Autowired SubscriberService subscriberService;
 	
 	@KafkaListener(topicPattern = ".*", groupId = "${spring.kafka.consumer.group-id}")
-	public void listen(Message<String> message) {
+	public ResponseEntity<?> listen(Message<String> message) {
 		System.out.println("````````````````````````LISTENER``````````````````````````````//");
 		if(this.subscriberService.getSubscriber(MessengerClientApplication.consumer_group_id).isEmpty()) {
-			System.out.println("CLIENT NOT INITIALIZED, PLEASE INITIALIZE BY GET@/client/init");
+			System.out.println("CLIENT NOT INITIALIZED, PLEASE INITIALIZE BY PUT@/client/id/init/");
 			System.out.println("//````````````````````````LISTENER``````````````````````````````");
-			return;
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CLIENT NOT INITIALIZED, PLEASE INITIALIZE BY PUT@/client/id/init/"+MessengerClientApplication.consumer_group_id);
 		}
 		List<String> subscriptionList = this.subscriberService.fetchSubscribedTopics(MessengerClientApplication.consumer_group_id);
 		Map<String, Object> headerList = message.getHeaders();
 		if(headerList.getOrDefault("kafka_receivedTopic", "DEFAULT_TOPIC_NOT_FOUND").equals("DEFAULT_TOPIC_NOT_FOUND")) {
 			System.out.println("BROADCAST FAILURE, FAILED TO FETCH TOPIC");
 			System.out.println("//````````````````````````LISTENER``````````````````````````````");
-			return;
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("BROADCAST FAILURE, FAILED TO FETCH TOPIC");
 		}
 		if(headerList.getOrDefault("kafka_receivedMessageKey", "DEFAULT_KEY_NOT_FOUND").equals("DEFAULT_KEY_NOT_FOUND")) {
 			System.out.println("BROADCAST FAILURE, FAILED TO FETCH KEY");
 			System.out.println("//````````````````````````LISTENER``````````````````````````````");
-			return;
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("BROADCAST FAILURE, FAILED TO FETCH KEY");
 		}
 		if(!subscriptionList.contains(headerList.get("kafka_receivedTopic"))) {
-			System.out.println("CLIENT IS NOT SUBSCRIBED TO THIS TOPIC, TO SUBSCRIBE PUT@/client/"+headerList.get("kafka_receivedTopic").toString());
+			System.out.println("CLIENT IS NOT SUBSCRIBED TO THIS TOPIC, TO SUBSCRIBE PUT@/client/topic/init"+headerList.get("kafka_receivedTopic").toString());
 			System.out.println("//````````````````````````LISTENER``````````````````````````````");
-			return;
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(("CLIENT IS NOT SUBSCRIBED TO THIS TOPIC, TO SUBSCRIBE PUT@/client/topic/init"+headerList.get("kafka_receivedTopic").toString()));
 		}
 		PayloadMessage payload = new PayloadMessage(headerList.get("kafka_receivedMessageKey").toString(),
 													message.getPayload(),
@@ -49,5 +51,6 @@ public class KafkaListenerService {
 													new Date(System.currentTimeMillis()));
 		System.out.println(payload);
 		System.out.println("//````````````````````````LISTENER``````````````````````````````");
+		return ResponseEntity.ok(payload);
 	}
 }
