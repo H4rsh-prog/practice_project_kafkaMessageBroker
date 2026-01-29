@@ -48,4 +48,8 @@ public class KafkaController {
 	public ResponseEntity<?> removeTopic(@PathVariable("topic") String topic){
 		return this.subscriberService.removeTopic(MessengerClientApplication.consumer_group_id, topic);
 	}
+	@DeleteMapping("/message/{messageKey}")
+	public ResponseEntity<?> deleteMessage(@PathVariable("messageKey") String messageKey){
+		return this.topicService.deleteMessage(messageKey);
+	}
 }
